@@ -80,10 +80,10 @@ function updateDateFilterOptions() {
     dateKeys.forEach(dateKey => {
         const option = document.createElement('option');
         option.value = dateKey;
-        const date = new Date(dateKey);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
+        const parts = dateKey.split('-');
+        const year = parts[0];
+        const month = parts[1];
+        const day = parts[2];
         option.textContent = `${year}年${month}月${day}日`;
         dateFilter.appendChild(option);
     });
