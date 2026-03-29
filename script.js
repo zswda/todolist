@@ -46,7 +46,7 @@ function getDateKey(dateStr) {
 
 // 获取筛选后的任务
 function getFilteredTodos() {
-    return todos.filter(todo => {
+    return todos.map((todo, index) => ({ ...todo, originalIndex: index })).filter(todo => {
         if (hideCompletedTasks && todo.completed) {
             return false;
         }
@@ -123,9 +123,9 @@ function renderTodos() {
             }
             
             li.innerHTML = `
-                <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleComplete(${todo.index})">
+                <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleComplete(${todo.originalIndex})">
                 <span class="task-text">${escapeHtml(todo.text)}</span>
-                <button class="delete-btn" onclick="deleteTodo(${todo.index})">删除</button>
+                <button class="delete-btn" onclick="deleteTodo(${todo.originalIndex})">删除</button>
             `;
             
             todoList.appendChild(li);
@@ -147,7 +147,7 @@ function groupTodosByDate(filteredTodos) {
                 items: []
             };
         }
-        groups[dateKey].items.push({ ...todo });
+        groups[dateKey].items.push({ ...todo, originalIndex: todo.originalIndex });
     });
     
     const sortedKeys = Object.keys(groups).sort((a, b) => new Date(b) - new Date(a));
