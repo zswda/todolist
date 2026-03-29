@@ -75,7 +75,7 @@ li:hover {
     background-color: #f9f9f9;
 }
 
-li.completed {
+li.completed .task-text {
     text-decoration: line-through;
     color: #888;
 }
@@ -86,7 +86,12 @@ li input[type="checkbox"] {
     cursor: pointer;
 }
 
-li button {
+li .task-text {
+    flex: 1;
+    word-break: break-word;
+}
+
+li .delete-btn {
     margin-left: auto;
     background-color: #f44336;
     border-radius: 4px;
@@ -94,8 +99,50 @@ li button {
     font-size: 14px;
 }
 
-li button:hover {
+li .delete-btn:hover {
     background-color: #da190b;
+}
+
+.date-header {
+    background-color: #f0f7f0;
+    border-bottom: 2px solid #4CAF50;
+    margin-top: 15px;
+    font-weight: bold;
+    color: #4CAF50;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.date-header:first-child {
+    margin-top: 0;
+}
+
+.date-title {
+    font-size: 14px;
+}
+
+.date-count {
+    font-size: 12px;
+    color: #888;
+    font-weight: normal;
+}
+
+.empty-message {
+    text-align: center;
+    color: #888;
+    padding: 40px 20px;
+    font-size: 14px;
+}
+
+.privacy-note {
+    text-align: center;
+    color: #888;
+    font-size: 12px;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
 }
 
 @media (max-width: 768px) {
@@ -115,5 +162,11 @@ li button:hover {
     
     button {
         border-radius: 4px;
+    }
+    
+    .date-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
     }
 }

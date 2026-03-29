@@ -6,32 +6,103 @@ const todoForm = document.getElementById('todo-form');
 const todoInput = document.getElementById('todo-input');
 const todoList = document.getElementById('todo-list');
 
-// 初始化页面
-function init() {
-    renderTodos();
+// 格式化日期
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const yesterdayOnly = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+    
+    if (dateOnly.getTime() === todayOnly.getTime()) {
+        return '今天';
+    } else if (dateOnly.getTime() === yesterdayOnly.getTime()) {
+        return '昨天';
+    } else {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const weekDay = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()];
+        return `${year}年${month}月${day}日 ${weekDay}`;
+    }
+}
+
+// 获取日期键（用于分组）
+function getDateKey(dateStr) {
+    const date = new Date(dateStr);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+// 按日期分组任务
+function groupTodosByDate() {
+    const groups = {};
+    
+    todos.forEach((todo, index) => {
+        const dateKey = getDateKey(todo.createdAt);
+        if (!groups[dateKey]) {
+            groups[dateKey] = {
+                date: todo.createdAt,
+                items: []
+            };
+        }
+        groups[dateKey].items.push({ ...todo, index });
+    });
+    
+    // 按日期排序（最新的在前）
+    const sortedKeys = Object.keys(groups).sort((a, b) => new Date(b) - new Date(a));
+    
+    return sortedKeys.map(key => ({
+        dateKey: key,
+        ...groups[key]
+    }));
 }
 
 // 渲染任务列表
 function renderTodos() {
     todoList.innerHTML = '';
     
-    todos.forEach((todo, index) => {
-        const li = document.createElement('li');
-        if (todo.completed) {
-            li.classList.add('completed');
-        }
+    if (todos.length === 0) {
+        todoList.innerHTML = '<li class="empty-message">暂无待办事项，添加一个吧！</li>';
+        return;
+    }
+    
+    const groupedTodos = groupTodosByDate();
+    
+    groupedTodos.forEach(group => {
+        // 创建日期分组标题
+        const dateHeader = document.createElement('li');
+        dateHeader.className = 'date-header';
+        dateHeader.innerHTML = `<span class="date-title">${formatDate(group.date)}</span><span class="date-count">${group.items.length} 项</span>`;
+        todoList.appendChild(dateHeader);
         
-        li.innerHTML = `
-            <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleComplete(${index})">
-            <span>${todo.text}</span>
-            <button onclick="deleteTodo(${index})">删除</button>
-        `;
-        
-        todoList.appendChild(li);
+        // 渲染该日期下的所有任务
+        group.items.forEach(todo => {
+            const li = document.createElement('li');
+            if (todo.completed) {
+                li.classList.add('completed');
+            }
+            
+            li.innerHTML = `
+                <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleComplete(${todo.index})">
+                <span class="task-text">${escapeHtml(todo.text)}</span>
+                <button class="delete-btn" onclick="deleteTodo(${todo.index})">删除</button>
+            `;
+            
+            todoList.appendChild(li);
+        });
     });
     
-    // 保存到本地存储
     saveTodos();
+}
+
+// HTML 转义（防止 XSS）
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // 切换任务完成状态
@@ -51,10 +122,12 @@ todoForm.addEventListener('submit', (e) => {
     e.preventDefault();
     
     const text = todoInput.value.trim();
-    console.log('添加任务:', text);
     if (text) {
-        todos.push({ text, completed: false });
-        console.log('任务列表:', todos);
+        todos.push({ 
+            text, 
+            completed: false, 
+            createdAt: new Date().toISOString() 
+        });
         todoInput.value = '';
         renderTodos();
     }
@@ -66,4 +139,4 @@ function saveTodos() {
 }
 
 // 初始化应用
-init();
+renderTodos();
