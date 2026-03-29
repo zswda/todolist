@@ -145,6 +145,36 @@ li .delete-btn:hover {
     border-radius: 4px;
 }
 
+.toolbar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.export-btn, .import-btn {
+    padding: 8px 16px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.export-btn:hover, .import-btn:hover {
+    background-color: #1976D2;
+}
+
+.import-btn {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
 @media (max-width: 768px) {
     .container {
         margin: 20px;

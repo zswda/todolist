@@ -138,5 +138,52 @@ function saveTodos() {
     localStorage.setItem('todos', JSON.stringify(todos));
 }
 
+// 导出数据
+function exportData() {
+    const dataStr = JSON.stringify(todos, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `todo-list-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// 导入数据
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedTodos = JSON.parse(e.target.result);
+            if (Array.isArray(importedTodos)) {
+                if (confirm(`即将导入 ${importedTodos.length} 条任务，是否继续？\n（现有任务将被保留）`)) {
+                    // 为导入的任务添加创建时间（如果没有的话）
+                    importedTodos.forEach(todo => {
+                        if (!todo.createdAt) {
+                            todo.createdAt = new Date().toISOString();
+                        }
+                    });
+                    todos = [...todos, ...importedTodos];
+                    saveTodos();
+                    renderTodos();
+                    alert('导入成功！');
+                }
+            } else {
+                alert('文件格式不正确！');
+            }
+        } catch (error) {
+            alert('导入失败：文件格式错误');
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
 // 初始化应用
 renderTodos();

@@ -14,6 +14,13 @@
             <button type="submit">添加</button>
         </form>
         <ul id="todo-list"></ul>
+        <div class="toolbar">
+            <button onclick="exportData()" class="export-btn">📤 导出数据</button>
+            <label class="import-btn">
+                📥 导入数据
+                <input type="file" accept=".json" onchange="importData(event)" hidden>
+            </label>
+        </div>
         <p class="privacy-note">🔒 您的待办事项仅保存在本地浏览器中，不会上传到服务器，完全私密安全。</p>
     </div>
     <script src="script.js"></script>
