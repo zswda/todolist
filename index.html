@@ -13,6 +13,16 @@
             <input type="text" id="todo-input" placeholder="添加新任务..." required>
             <button type="submit">添加</button>
         </form>
+        <div class="search-filter">
+            <input type="text" id="search-input" placeholder="🔍 搜索任务...">
+            <select id="date-filter">
+                <option value="all">所有日期</option>
+            </select>
+            <label class="filter-checkbox">
+                <input type="checkbox" id="hide-completed">
+                <span>隐藏已完成</span>
+            </label>
+        </div>
         <ul id="todo-list"></ul>
         <div class="toolbar">
             <button onclick="exportData()" class="export-btn">📤 导出数据</button>

@@ -44,6 +44,62 @@ h1 {
     border-color: #4CAF50;
 }
 
+.search-filter {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+#search-input {
+    flex: 1;
+    min-width: 150px;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+
+#search-input:focus {
+    border-color: #4CAF50;
+}
+
+#date-filter {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+    outline: none;
+}
+
+#date-filter:focus {
+    border-color: #4CAF50;
+}
+
+.filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+}
+
+.filter-checkbox input[type="checkbox"] {
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
+.no-results {
+    text-align: center;
+    color: #888;
+    padding: 40px 20px;
+    font-size: 14px;
+}
+
 button {
     padding: 10px 20px;
     background-color: #4CAF50;

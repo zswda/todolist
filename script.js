@@ -5,6 +5,14 @@ let todos = JSON.parse(localStorage.getItem('todos')) || [];
 const todoForm = document.getElementById('todo-form');
 const todoInput = document.getElementById('todo-input');
 const todoList = document.getElementById('todo-list');
+const searchInput = document.getElementById('search-input');
+const dateFilter = document.getElementById('date-filter');
+const hideCompleted = document.getElementById('hide-completed');
+
+// 当前筛选状态
+let currentSearch = '';
+let currentDateFilter = 'all';
+let hideCompletedTasks = false;
 
 // 格式化日期
 function formatDate(dateStr) {
@@ -36,49 +44,78 @@ function getDateKey(dateStr) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-// 按日期分组任务
-function groupTodosByDate() {
-    const groups = {};
-    
-    todos.forEach((todo, index) => {
-        const dateKey = getDateKey(todo.createdAt);
-        if (!groups[dateKey]) {
-            groups[dateKey] = {
-                date: todo.createdAt,
-                items: []
-            };
+// 获取筛选后的任务
+function getFilteredTodos() {
+    return todos.filter(todo => {
+        if (hideCompletedTasks && todo.completed) {
+            return false;
         }
-        groups[dateKey].items.push({ ...todo, index });
+        
+        if (currentSearch) {
+            const searchText = currentSearch.toLowerCase();
+            if (!todo.text.toLowerCase().includes(searchText)) {
+                return false;
+            }
+        }
+        
+        if (currentDateFilter !== 'all') {
+            const todoDateKey = getDateKey(todo.createdAt);
+            if (todoDateKey !== currentDateFilter) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+}
+
+// 更新日期筛选下拉框
+function updateDateFilterOptions() {
+    const dateKeys = [...new Set(todos.map(todo => getDateKey(todo.createdAt)))];
+    dateKeys.sort((a, b) => new Date(b) - new Date(a));
+    
+    const currentValue = dateFilter.value;
+    dateFilter.innerHTML = '<option value="all">所有日期</option>';
+    
+    dateKeys.forEach(dateKey => {
+        const option = document.createElement('option');
+        option.value = dateKey;
+        const date = new Date(dateKey);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        option.textContent = `${year}年${month}月${day}日`;
+        dateFilter.appendChild(option);
     });
     
-    // 按日期排序（最新的在前）
-    const sortedKeys = Object.keys(groups).sort((a, b) => new Date(b) - new Date(a));
-    
-    return sortedKeys.map(key => ({
-        dateKey: key,
-        ...groups[key]
-    }));
+    if (dateKeys.includes(currentValue)) {
+        dateFilter.value = currentValue;
+    }
 }
 
 // 渲染任务列表
 function renderTodos() {
     todoList.innerHTML = '';
     
-    if (todos.length === 0) {
-        todoList.innerHTML = '<li class="empty-message">暂无待办事项，添加一个吧！</li>';
+    const filteredTodos = getFilteredTodos();
+    
+    if (filteredTodos.length === 0) {
+        if (todos.length === 0) {
+            todoList.innerHTML = '<li class="empty-message">暂无待办事项，添加一个吧！</li>';
+        } else {
+            todoList.innerHTML = '<li class="no-results">没有找到匹配的任务</li>';
+        }
         return;
     }
     
-    const groupedTodos = groupTodosByDate();
+    const groupedTodos = groupTodosByDate(filteredTodos);
     
     groupedTodos.forEach(group => {
-        // 创建日期分组标题
         const dateHeader = document.createElement('li');
         dateHeader.className = 'date-header';
         dateHeader.innerHTML = `<span class="date-title">${formatDate(group.date)}</span><span class="date-count">${group.items.length} 项</span>`;
         todoList.appendChild(dateHeader);
         
-        // 渲染该日期下的所有任务
         group.items.forEach(todo => {
             const li = document.createElement('li');
             if (todo.completed) {
@@ -96,6 +133,29 @@ function renderTodos() {
     });
     
     saveTodos();
+}
+
+// 按日期分组任务（接受筛选后的任务列表）
+function groupTodosByDate(filteredTodos) {
+    const groups = {};
+    
+    filteredTodos.forEach((todo) => {
+        const dateKey = getDateKey(todo.createdAt);
+        if (!groups[dateKey]) {
+            groups[dateKey] = {
+                date: todo.createdAt,
+                items: []
+            };
+        }
+        groups[dateKey].items.push({ ...todo });
+    });
+    
+    const sortedKeys = Object.keys(groups).sort((a, b) => new Date(b) - new Date(a));
+    
+    return sortedKeys.map(key => ({
+        dateKey: key,
+        ...groups[key]
+    }));
 }
 
 // HTML 转义（防止 XSS）
@@ -129,8 +189,27 @@ todoForm.addEventListener('submit', (e) => {
             createdAt: new Date().toISOString() 
         });
         todoInput.value = '';
+        updateDateFilterOptions();
         renderTodos();
     }
+});
+
+// 搜索事件
+searchInput.addEventListener('input', (e) => {
+    currentSearch = e.target.value.trim();
+    renderTodos();
+});
+
+// 日期筛选事件
+dateFilter.addEventListener('change', (e) => {
+    currentDateFilter = e.target.value;
+    renderTodos();
+});
+
+// 隐藏已完成事件
+hideCompleted.addEventListener('change', (e) => {
+    hideCompletedTasks = e.target.checked;
+    renderTodos();
 });
 
 // 保存任务到本地存储
@@ -171,6 +250,7 @@ function importData(event) {
                     });
                     todos = [...todos, ...importedTodos];
                     saveTodos();
+                    updateDateFilterOptions();
                     renderTodos();
                     alert('导入成功！');
                 }
@@ -186,4 +266,5 @@ function importData(event) {
 }
 
 // 初始化应用
+updateDateFilterOptions();
 renderTodos();
